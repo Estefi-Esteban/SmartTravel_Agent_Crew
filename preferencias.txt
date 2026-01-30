@@ -1,0 +1,6 @@
+
+    PERFIL DEL CLIENTE:
+    - Estilo: Aventura y naturaleza
+    - Comida: Comida callejera local, picante
+    - Intereses: Trekking, fotografía y evitar sitios muy turísticos
+    
