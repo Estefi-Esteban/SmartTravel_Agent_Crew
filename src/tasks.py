@@ -1,80 +1,104 @@
 from crewai import Task
 from .agents import explorador_agent, logistico_agent, disenador_agent, ocio_agent
 
-# Tarea 1: Investigación General (Vuelos y Hotel)
+# Tarea 1: Investigación Completa (Vuelos + Hotel + Transporte Local + Eventos)
 tarea_investigacion = Task(
     description="""
-    Investiga opciones para un viaje a {destino} saliendo desde {origen} por {dias} días.
-    1. Busca precio REAL de vuelo ida/vuelta.
-    2. Busca precio medio por noche de un hotel de 4 estrellas.
-    3. Clima previsto para la fecha próxima.
+    Eres el encargado de la logística base para un viaje a {destino} desde {origen} en las fechas: {fechas} ({dias} días).
+    
+    ESTA ES LA PARTE CRÍTICA (Se realista):
+    1. **Vuelos (CRUCIAL):** - Busca vuelos IDA Y VUELTA directos o con escalas cortas.
+       - Prioriza aerolíneas confiables (Ej: Iberia, British Airways, Lufthansa, Air France) o Low-Cost con maleta incluida.
+       - IGNORA precios gancho tipo "desde 10€". Busca un precio MEDIO realista para esas fechas (temporada alta).
+       - Escribe en el informe: "Aerolínea recomendada: X, Precio aprox: Y €".
+       
+    2. **Alojamiento:** Busca hoteles de 4 estrellas céntricos (Puntuación superior a 8/10). Da el precio TOTAL por las {dias} noches.
+    
+    3. **Transporte Local:** Investiga PRECIOS de Metro, Uber/Taxi aeropuerto-centro y tarjetas turísticas.
+    
+    4. **Agenda Cultural:** Busca "Events in {destino} {fechas}". 
+    
+    5. **Clima:** Previsión detallada.
     """,
-    expected_output="Informe con precio del vuelo, precio por noche del hotel y clima.",
+    expected_output="Informe realista con vuelos de aerolíneas reconocidas (ida/vuelta), hotel 4* y transporte.",
     agent=explorador_agent
 )
 
-# Tarea 2: Investigación de Ocio y Gastronomía 
+# Tarea 2: Ocio y Rutas (AUMENTADA PARA TENER MÁS CONTENIDO)
 tarea_ocio = Task(
     description="""
-    Investiga actividades de pago y gastronomía en {destino}:
-    1. Encuentra 3 actividades o tours IMPRESCINDIBLES (Museos, Excursiones, Entradas) y sus PRECIOS.
-    2. Encuentra 3 restaurantes recomendados (gama media/alta) y el precio medio por persona.
+    Tu misión es llenar {dias} días de contenido. NO te limites a 3 cosas.
+    
+    1. Busca al menos 10 Puntos de Interés (Monumentos, Museos, Parques, Barrios de moda).
+    2. Busca 5 Restaurantes/Cafeterías con encanto (desayuno, comida, cena).
+    3. Agrupa estos lugares por ZONAS GEOGRÁFICAS para que el itinerario tenga sentido (ej: Día 1 Zona Centro, Día 2 Zona Sur).
+    4. Consigue los PRECIOS de las entradas de los sitios principales.
     """,
-    expected_output="Lista detallada de 3 actividades y 3 restaurantes con sus precios exactos.",
-    agent=ocio_agent
+    expected_output="Lista extensa de actividades agrupadas por zonas y restaurantes con precios.",
+    agent=ocio_agent,
+    context=[tarea_investigacion]
 )
 
-# Tarea 3: Cálculo Total
+# Tarea 3: Presupuesto Detallado
 tarea_presupuesto = Task(
     description="""
-    Calcula el coste TOTAL del viaje basándote en los informes del explorador y del agente de ocio.
+    Calcula el presupuesto TOTAL riguroso.
     
-    Usa la 'CalculatorTool' para aplicar esta fórmula:
-    (Precio_Vuelo) + (Precio_Hotel * {dias}) + (Suma_Precios_Actividades) + (Precio_Medio_Comidas * 2 * {dias})
+    Usa la 'CalculatorTool'.
+    Desglose necesario:
+    - Vuelos
+    - Alojamiento (Total por todas las noches)
+    - Transporte (30€/día x persona aprox si no tienes datos exactos)
+    - Comidas (Calcula 50€/día x persona media)
+    - Actividades (Suma las entradas encontradas)
     
-    *Nota: Asume 2 comidas al día por el precio medio encontrado por el agente de ocio.*
+    Calcula el TOTAL FINAL.
     """,
-    expected_output="Desglose matemático detallado y la Cifra Final del presupuesto.",
+    expected_output="Tabla de costes desglosada línea por línea y suma final.",
     agent=logistico_agent,
     context=[tarea_investigacion, tarea_ocio]
 )
 
-# Tarea 4: Itinerario Final
+# Tarea 4: Guía Final (MODO "TRAVEL BLOGGER" DETALLADO)
 tarea_itinerario = Task(
     description="""
-    1. USA LA TOOL 'FileReadTool' para leer el archivo 'preferencias.txt'.
-    2. Crea una GUÍA DE VIAJE PREMIUM para {destino} basada en esas preferencias, el ocio encontrado y el presupuesto.
+    Usa la 'FileReadTool' para leer 'preferencias.txt'.
     
-    IMPORTANTE: El formato de salida debe ser MARKDOWN ESTÉTICO siguiendo esta estructura estrictamente:
+    Genera la GUÍA DE VIAJE DEFINITIVA. Actúa como un Travel Blogger experto y carismático.
+    Tu objetivo es vender la experiencia. Escribe con detalle, no hagas listas secas.
     
-    # ✈️ VIAJE A {destino} - [Estilo de Viaje]
+    REGLAS DE ORO PARA EL ITINERARIO:
+    1. Debes cubrir TODOS los {dias} días.
+    2. Para CADA día, debes estructurar: MAÑANA, COMIDA, TARDE y NOCHE.
+    3. Describe el ambiente, no solo el nombre del sitio. (Ej: "Pasea por el mercado de Camden mientras huele a comida callejera...").
+    
+    ESTRUCTURA DE SALIDA (MARKDOWN):
+    
+    # ✈️ LA GRAN AVENTURA EN {destino} ({fechas})
+    
+    ## 💰 Tu Presupuesto Detallado
+    (Tabla completa del agente logístico)
+    
+    ## 🚕 Moverse como un Local
+    (Información de transporte del explorador)
+    
+    ## 🗺️ ITINERARIO DÍA A DÍA (DETALLADO)
+    
+    ### 📅 DÍA 1: [Ponle un Título Épico, ej: "Aterrizaje y primera toma de contacto"]
+    * 🌅 **09:00 - Mañana:** [Describe qué hacer, qué ver y por qué mola].
+    * 🍽️ **14:00 - Dónde comer:** [Recomendación del agente de ocio].
+    * ☀️ **16:00 - Tarde:** [Siguiente actividad o paseo por barrio].
+    * 🌙 **21:00 - Noche:** [Plan nocturno: cena, paseo o mirador].
+    
+    (REPITE ESTA ESTRUCTURA EXACTA PARA LOS {dias} DÍAS. ¡NO RESUMAS!)
+    
+    ## 🎒 Consejos Finales y Maleta
+    * Tips de visado, enchufes y ropa.
+    
     ---
-    
-    ## 📊 Resumen del Presupuesto
-    (Crea una tabla Markdown con los conceptos: Vuelo, Hotel, Actividades, Comidas, TOTAL)
-    
-    ## 🍜 Gastronomía y Ocio Recomendado
-    *Aquí pon los restaurantes y actividades que encontró el agente de Ocio con sus precios.*
-    
-    ## 🗓️ Itinerario Día a Día
-    ### Día 1: [Título del día]
-    * 🌅 Mañana: ...
-    * ☀️ Tarde: ...
-    * 🌙 Noche: ...
-    
-    (Repetir para todos los días, integrando las actividades encontradas)
-    
-    ## 🏨 Alojamiento y Vuelos
-    * **Hotel recomendado:** ...
-    * **Vuelo:** ...
-    
-    ## 💡 Consejos Personalizados
-    (Basados en las preferencias del cliente leídas del archivo)
-    
-    ---
-    *Plan generado por SmartTravel Agent AI*
+    *Planificado por tu Agente IA de Viajes*
     """,
-    expected_output="Guía de viaje final en formato Markdown estructurado con tablas, emojis y secciones claras.",
+    expected_output="Guía Markdown MUY extensa, descriptiva y detallada día a día.",
     agent=disenador_agent,
     context=[tarea_investigacion, tarea_ocio, tarea_presupuesto]
 )

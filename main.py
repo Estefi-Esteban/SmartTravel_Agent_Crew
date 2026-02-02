@@ -1,73 +1,56 @@
-from crewai import Crew, Process
-from src.agents import explorador_agent, logistico_agent, disenador_agent, llm
-from src.tasks import tarea_investigacion, tarea_presupuesto, tarea_itinerario
-import sys
 import os
+from crewai import Crew, Process
+from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
 
-def generar_preferencias():
-    print("\n📝 -- PERFIL DEL VIAJERO --")
-    estilo = input("1. ¿Qué estilo de viaje buscas? (Mochilero, Lujo, Aventura...): ")
-    comida = input("2. ¿Gustos de comida? (Vegano, Local, Internacional...): ")
-    hobbies = input("3. ¿Intereses? (Museos, Trekking, Fiesta, Historia...): ")
-    
-    contenido = f"""
-    PERFIL DEL CLIENTE:
-    - Estilo: {estilo}
-    - Comida: {comida}
-    - Intereses: {hobbies}
-    """
-    
-    with open("preferencias.txt", "w", encoding="utf-8") as f:
-        f.write(contenido)
-    
-    print("✅ Perfil guardado.\n")
+from src.agents import explorador_agent, logistico_agent, disenador_agent, ocio_agent
+from src.tasks import tarea_investigacion, tarea_ocio, tarea_presupuesto, tarea_itinerario
 
-
-# --- Configuración de la Crew ---
-travel_crew = Crew(
-    agents=[explorador_agent, logistico_agent, disenador_agent],
-    tasks=[tarea_investigacion, tarea_presupuesto, tarea_itinerario],
-    process=Process.sequential, 
-    #manager_llm=llm, 
-    verbose=True,
-    memory=False,   
-    max_rpm=10      
-)
+load_dotenv()
 
 def run():
-    print("\n✈️  SMART TRAVEL AGENT v3.0 (Full Personalized)")
-    print("===============================================")
+    print("🤖 --- BIENVENIDO A SMARTTRAVEL AGENT --- 🤖")
+    print("Configurando tu equipo de agentes expertos...")
     
-    # 1. Generamos perfil
-    generar_preferencias()
-    
-    # 2. Pedimos datos del viaje
-    print("🌍 -- DATOS DEL VIAJE --")
-    destino_input = input("¿Destino?: ")
-    origen_input = input("¿Ciudad de Origen? (Para vuelos): ")
-    dias_input = input("¿Duración (días)?: ")
-    
+    # 1. Definir la Crew con los agentes y tareas
+    travel_crew = Crew(
+        agents=[explorador_agent, ocio_agent, logistico_agent, disenador_agent],
+        tasks=[tarea_investigacion, tarea_ocio, tarea_presupuesto, tarea_itinerario],
+        process=Process.sequential,
+        verbose=True
+    )
+
+    # 2. Pedir datos al usuario
+    print("\n📝 Por favor, introduce los detalles de tu viaje:")
+    origen_input = input("📍 Ciudad de Origen: ")
+    destino_input = input("✈️ Ciudad de Destino: ")
+    fechas_input = input("📅 Fechas exactas (ej: 10 al 15 de Agosto): ")
+    dias_input = input("⏳ Duración (nº de días): ")
+
     inputs = {
-        'destino': destino_input,
         'origen': origen_input,
+        'destino': destino_input,
+        'fechas': fechas_input,
         'dias': dias_input
     }
+
+    print("\n🚀 Iniciando la planificación... Los agentes están trabajando.")
     
-    print(f"\n🚀 Iniciando agentes... Buscando vuelos {origen_input} -> {destino_input}")
-    
+    # 3. Ejecutar la Crew
     try:
         resultado = travel_crew.kickoff(inputs=inputs)
         
+        # 4. Guardar resultado en Markdown estético
         nombre_archivo = f"Plan_{destino_input}_desde_{origen_input}.md"
+        nombre_archivo = nombre_archivo.replace(" ", "_")
+        
         with open(nombre_archivo, "w", encoding="utf-8") as f:
             f.write(str(resultado))
             
-        print(f"\n✨ ¡PLAN COMPLETADO! Guardado en: {nombre_archivo}")
-        print("\n################ RESULTADO ################\n")
-        print(resultado)
+        print(f"\n✅ ¡Misión cumplida! Tu plan de viaje está listo en: {nombre_archivo}")
         
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"\n❌ Ocurrió un error durante la ejecución: {e}")
 
 if __name__ == "__main__":
     run()
