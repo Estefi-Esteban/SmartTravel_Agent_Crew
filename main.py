@@ -4,7 +4,6 @@ from src.tasks import tarea_investigacion, tarea_presupuesto, tarea_itinerario
 import sys
 import os
 
-# --- Generador de Preferencias Automático ---
 def generar_preferencias():
     print("\n📝 -- PERFIL DEL VIAJERO --")
     estilo = input("1. ¿Qué estilo de viaje buscas? (Mochilero, Lujo, Aventura...): ")
@@ -22,6 +21,7 @@ def generar_preferencias():
         f.write(contenido)
     
     print("✅ Perfil guardado.\n")
+
 
 # --- Configuración de la Crew ---
 travel_crew = Crew(
@@ -41,15 +41,15 @@ def run():
     # 1. Generamos perfil
     generar_preferencias()
     
-    # 2. Pedimos datos del viaje (CON ORIGEN)
+    # 2. Pedimos datos del viaje
     print("🌍 -- DATOS DEL VIAJE --")
     destino_input = input("¿Destino?: ")
-    origen_input = input("¿Ciudad de Origen? (Para vuelos): ") # <--- NUEVO
+    origen_input = input("¿Ciudad de Origen? (Para vuelos): ")
     dias_input = input("¿Duración (días)?: ")
     
     inputs = {
         'destino': destino_input,
-        'origen': origen_input, # <--- SE LO PASAMOS AQUI
+        'origen': origen_input,
         'dias': dias_input
     }
     
