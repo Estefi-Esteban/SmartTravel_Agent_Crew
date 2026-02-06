@@ -1,5 +1,5 @@
 from crewai_tools import SerperDevTool, FileReadTool
-from crewai.tools import BaseTool
+from crewai.tools import BaseTool, tool
 import os
 from dotenv import load_dotenv
 
@@ -12,14 +12,13 @@ search_tool = SerperDevTool()
 file_tool = FileReadTool(file_path='preferencias.txt')
 
 # --- 3. HERRAMIENTA DE CALCULADORA ---
-class CalculatorTool(BaseTool):
-    name: str = "CalculatorTool"
-    description: str = "Calcula operaciones matemáticas. Ej: '200 + 100'."
-
-    def _run(self, operation: str) -> str:
-        try:
-            return str(eval(operation))
-        except Exception as e:
-            return "Error de cálculo"
-
-calc_tool = CalculatorTool()
+@tool("CalculatorTool")
+def calc_tool(operation: str) -> str:
+    """
+    Realiza calculos matematicos. La entrada debe ser una expresion matematica 
+    simple en formato string, por ejemplo: '200*7' o '5000/2'.
+    """
+    try:
+        return str(eval(operation))
+    except Exception as e:
+        return f"Error al calcular: {str(e)}"

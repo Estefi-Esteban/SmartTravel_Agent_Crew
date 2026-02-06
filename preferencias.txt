@@ -1,6 +1,6 @@
 
     PERFIL DEL CLIENTE:
-    - Estilo: Aventura y Naturaleza
-    - Comida: Callejera y picante
-    - Intereses: Fotografía y templos antiguos
+    - Estilo: Aventura
+    - Comida: Callejera
+    - Intereses: Museos
     

@@ -24,7 +24,7 @@ tarea_investigacion = Task(
     agent=explorador_agent
 )
 
-# Tarea 2: Ocio y Rutas (AUMENTADA PARA TENER MÁS CONTENIDO)
+# Tarea 2: Ocio y Rutas
 tarea_ocio = Task(
     description="""
     Tu misión es llenar {dias} días de contenido. NO te limites a 3 cosas.
@@ -59,7 +59,7 @@ tarea_presupuesto = Task(
     context=[tarea_investigacion, tarea_ocio]
 )
 
-# Tarea 4: Guía Final (MODO "TRAVEL BLOGGER" DETALLADO)
+# Tarea 4: Guía Final
 tarea_itinerario = Task(
     description="""
     Usa la 'FileReadTool' para leer 'preferencias.txt'.
